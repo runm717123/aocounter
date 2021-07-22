@@ -1,82 +1,110 @@
-import Head from 'next/head'
-
+import Head from 'next/head';
+import { useState, useEffect } from 'react';
 export default function Home() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+	const [equipmentPrice, setEquipmentPrice] = useState(false);
+	const [stonePrice, setStonePrice] = useState(false);
+	const [data, setData] = useState(false);
 
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+	// const formatCurr = (strNum) => Number(strNum).toLocaleString('en');
+	const formatCurr = (strNum) => strNum.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
+	const onPriceType = (e, rawNum) => {
+		rawNum = formatCurr(rawNum);
+		e.target.value = rawNum;
+	};
 
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
+	const onStonePriceChange = (e) => {
+		let rawNum = e.target.value.replace(/\D/g, '');
+		setStonePrice(rawNum);
+		onPriceType(e, rawNum);
+	};
 
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
+	const onEquipmentPriceChange = (e) => {
+		let rawNum = e.target.value.replace(/\D/g, '');
+		setEquipmentPrice(rawNum);
+		onPriceType(e, rawNum);
+	};
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
+	const countStonesReq = (lvl) => {
+		if (lvl > 1) {
+			return lvl + countStonesReq(lvl - 1) * 2;
+		}
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+		return lvl;
+	};
 
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
-    </div>
-  )
+	const countEquipmentReq = (lvl) => {
+		return 2 ** lvl;
+	};
+
+	const countPrice = () => {
+		const maxLvl = 11;
+		const priceList = [];
+		for (let i = 1; i <= maxLvl; i++) {
+			priceList.push({ equipment: countEquipmentReq(i), stone: countStonesReq(i) });
+		}
+
+		setData(priceList);
+	};
+
+	useEffect(() => {
+		countPrice();
+	}, []);
+
+	const getPrice = (eq, st) => {
+		if (!equipmentPrice || !stonePrice) {
+			return 'please specify the price';
+		}
+
+		const price = st * stonePrice + eq * equipmentPrice;
+
+		return price.toLocaleString('en');
+	};
+
+	return (
+		<div className="p-2">
+			<Head>
+				<title>Create Next App</title>
+				<link rel="icon" href="/favicon.ico" />
+			</Head>
+
+			<form className="grid grid-cols-10 gap-2 items-center w-screen md:w-[45vw]" action="">
+				<label className="col-span-3" htmlFor="equipmentPrice">
+					Equipment Price
+				</label>
+				<span className="text-center">:</span>
+				<input className="col-span-6 text-right" type="text" name="equipmentPrice" id="equipmentPrice" placeholder="type the equipment price here ..." onChange={onEquipmentPriceChange} />
+				<label className="col-span-3" htmlFor="equipmentPrice">
+					Enchant Stones Price
+				</label>
+				<span className="text-center">:</span>
+				<input className="col-span-6 text-right" type="text" name="stonePrice" id="stonePrice" placeholder="type the enchant stone price here ..." onChange={onStonePriceChange} />
+			</form>
+
+			{data && (
+				<table className="mt-10">
+					<thead>
+						<tr>
+							<td className="py-2 px-4">+</td>
+							<td className="py-2 px-4">Total Equipment</td>
+							<td className="py-2 px-4">Total Enchant Stone</td>
+							<td className="py-2 px-4">Total Price</td>
+						</tr>
+					</thead>
+					<tbody>
+						{data.map((item, i) => {
+							return (
+								<tr key={item.stone}>
+									<td className="py-2 px-4">{++i}</td>
+									<td className="py-2 px-4">{item.equipment}</td>
+									<td className="py-2 px-4">{item.stone}</td>
+									<td className="py-2 px-4">{getPrice(item.equipment, item.stone)}</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			)}
+		</div>
+	);
 }
