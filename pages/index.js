@@ -61,25 +61,30 @@ export default function Home() {
 		return price.toLocaleString('en');
 	};
 
+	// const
+
 	return (
 		<div className="p-2">
 			<Head>
-				<title>Create Next App</title>
+				<title>Equipment level Counter</title>
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<form className="grid grid-cols-10 gap-2 items-center w-screen md:w-[45vw]" action="">
+			<div className="grid grid-cols-10 gap-2 items-center w-full md:w-[45vw]" action="">
 				<label className="col-span-3" htmlFor="equipmentPrice">
 					Equipment Price
 				</label>
 				<span className="text-center">:</span>
 				<input className="col-span-6 text-right" type="text" name="equipmentPrice" id="equipmentPrice" placeholder="type the equipment price here ..." onChange={onEquipmentPriceChange} />
-				<label className="col-span-3" htmlFor="equipmentPrice">
+				<label className="col-span-3" htmlFor="stonePrice">
 					Enchant Stones Price
 				</label>
 				<span className="text-center">:</span>
 				<input className="col-span-6 text-right" type="text" name="stonePrice" id="stonePrice" placeholder="type the enchant stone price here ..." onChange={onStonePriceChange} />
-			</form>
+				<div className="col-span-3">Cara baca</div>
+				<span className="text-center">:</span>
+				<div className="col-span-6 text-sm">membutuhkan 2 buah equip polos dan 1 enchant stone untuk membuat equip +1, sehingga total harganya adalah {getPrice(2, 1)}</div>
+			</div>
 
 			{data && (
 				<table className="mt-10">
@@ -94,7 +99,7 @@ export default function Home() {
 					<tbody>
 						{data.map((item, i) => {
 							return (
-								<tr key={item.stone}>
+								<tr key={item.stone} className="hover:font-bold">
 									<td className="py-2 px-4">{++i}</td>
 									<td className="py-2 px-4">{item.equipment}</td>
 									<td className="py-2 px-4">{item.stone}</td>
