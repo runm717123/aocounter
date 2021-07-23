@@ -1,9 +1,9 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
-export default function Home() {
+import { useState } from 'react';
+
+export default function Home({ data }) {
 	const [equipmentPrice, setEquipmentPrice] = useState(false);
 	const [stonePrice, setStonePrice] = useState(false);
-	const [data, setData] = useState(false);
 
 	// const formatCurr = (strNum) => Number(strNum).toLocaleString('en');
 	const formatCurr = (strNum) => strNum.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -25,32 +25,6 @@ export default function Home() {
 		onPriceType(e, rawNum);
 	};
 
-	const countStonesReq = (lvl) => {
-		if (lvl > 1) {
-			return lvl + countStonesReq(lvl - 1) * 2;
-		}
-
-		return lvl;
-	};
-
-	const countEquipmentReq = (lvl) => {
-		return 2 ** lvl;
-	};
-
-	const countPrice = () => {
-		const maxLvl = 11;
-		const priceList = [];
-		for (let i = 1; i <= maxLvl; i++) {
-			priceList.push({ equipment: countEquipmentReq(i), stone: countStonesReq(i) });
-		}
-
-		setData(priceList);
-	};
-
-	useEffect(() => {
-		countPrice();
-	}, []);
-
 	const getPrice = (eq, st) => {
 		if (!equipmentPrice || !stonePrice) {
 			return 'please specify the price';
@@ -61,7 +35,17 @@ export default function Home() {
 		return price.toLocaleString('en');
 	};
 
-	// const
+	const onCellClick = (e) => {
+		var text = e.target.innerText;
+		navigator.clipboard.writeText(text).then(
+			function () {
+				console.log('Async: Copying to clipboard was successful!');
+			},
+			function (err) {
+				console.error('Async: Could not copy text: ', err);
+			}
+		);
+	};
 
 	return (
 		<div className="p-2">
@@ -86,30 +70,52 @@ export default function Home() {
 				<div className="col-span-6 text-sm">membutuhkan 2 buah equip polos dan 1 enchant stone untuk membuat equip +1, sehingga total harganya adalah {getPrice(2, 1)}</div>
 			</div>
 
-			{data && (
-				<table className="mt-10">
-					<thead>
-						<tr>
-							<td className="py-2 px-4">+</td>
-							<td className="py-2 px-4">Total Equipment</td>
-							<td className="py-2 px-4">Total Enchant Stone</td>
-							<td className="py-2 px-4">Total Price</td>
-						</tr>
-					</thead>
-					<tbody>
-						{data.map((item, i) => {
-							return (
-								<tr key={item.stone} className="hover:font-bold">
-									<td className="py-2 px-4">{++i}</td>
-									<td className="py-2 px-4">{item.equipment}</td>
-									<td className="py-2 px-4">{item.stone}</td>
-									<td className="py-2 px-4">{getPrice(item.equipment, item.stone)}</td>
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>
-			)}
+			<table className="mt-10">
+				<thead>
+					<tr>
+						<td className="py-2 px-4">+</td>
+						<td className="py-2 px-4">Total Equipment</td>
+						<td className="py-2 px-4">Total Enchant Stone</td>
+						<td className="py-2 px-4">Total Price</td>
+					</tr>
+				</thead>
+				<tbody>
+					{data.map((item, i) => {
+						return (
+							<tr key={item.stone} className="hover:font-bold" onClick={onCellClick}>
+								<td className="py-2 px-4">{++i}</td>
+								<td className="py-2 px-4">{item.equipment}</td>
+								<td className="py-2 px-4">{item.stone}</td>
+								<td className="py-2 px-4">{getPrice(item.equipment, item.stone)}</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
 		</div>
 	);
+}
+
+export async function getStaticProps() {
+	const countStonesReq = (lvl) => {
+		if (lvl > 1) {
+			return lvl + countStonesReq(lvl - 1) * 2;
+		}
+
+		return lvl;
+	};
+
+	const countEquipmentReq = (lvl) => {
+		return 2 ** lvl;
+	};
+
+	const maxLvl = 11;
+	const priceList = [];
+	for (let i = 1; i <= maxLvl; i++) {
+		priceList.push({ equipment: countEquipmentReq(i), stone: countStonesReq(i) });
+	}
+
+	return {
+		props: { data: priceList },
+	};
 }
